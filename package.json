@@ -1,0 +1,20 @@
+{
+  "name": "bitmovin-playwright-poc",
+  "version": "1.0.0",
+  "main": "./public/bitmovin-player.js",
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "keywords": [],
+  "author": "Carlos Salamanca",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "bitmovin-player": "^8.178.0",
+    "bitmovin-player-ui": "^3.70.0",
+    "playwright": "^1.46.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.1"
+  }
+}

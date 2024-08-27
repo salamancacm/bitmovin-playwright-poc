@@ -1,0 +1,72 @@
+const { test, expect } = require('@playwright/test');
+
+test.describe('Bitmovin Player POC', () => {
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:8080/bitmovin-player.html'); // Local server
+  });
+
+  test('Play and Pause Video', async ({ page }) => {
+    const playButton = await page.locator('.bmpui-ui-hugeplaybacktogglebutton');
+    await playButton.click(); // Play video
+
+    // Check video is playing
+    await expect(page.locator('.bmpui-ui-hugeplaybacktogglebutton[aria-label="Pause"]')).toBeVisible();
+
+    await playButton.click(); // Pause video
+
+    // Check video is paused
+    await expect(page.locator('.bmpui-ui-hugeplaybacktogglebutton[aria-label="Play"]')).toBeVisible();
+  });
+
+  test('Change Volume and Mute/Unmute', async ({ page }) => {
+    const muteButton = await page.locator('.bmpui-ui-volumetogglebutton');
+    await muteButton.click(); // Mute video
+
+    // Check that video is muted
+    await expect(page.locator('.bmpui-ui-volumetogglebutton[aria-pressed="true"]')).toBeVisible();
+
+    await muteButton.click(); // Unmute video
+
+    // Check that video is unmuted
+    await expect(page.locator('.bmpui-ui-volumetogglebutton[aria-pressed="false"]')).toBeVisible();
+
+    // Change the volume level
+    const volumeSlider = await page.locator('.bmpui-ui-volumeslider');
+    await volumeSlider.fill('0.5'); // Set volume to 50%
+
+    // Verify the volume has been changed
+    const volumeValue = await page.locator('.bmpui-ui-volumetogglebutton').getAttribute('aria-valuenow');
+    expect(volumeValue).toBe('50'); // Assuming the player updates this attribute
+  });
+
+  test('Toggle Picture-in-Picture Mode', async ({ page }) => {
+    const pipButton = await page.locator('.bmpui-ui-piptogglebutton');
+    await pipButton.click(); // Enable Picture-in-Picture mode
+
+    // Check that Picture-in-Picture mode is enabled
+    await expect(page.locator('.bmpui-ui-piptogglebutton[aria-pressed="true"]')).toBeVisible();
+
+    await pipButton.click(); // Disable Picture-in-Picture mode
+
+    // Check that Picture-in-Picture mode is disabled
+    await expect(page.locator('.bmpui-ui-piptogglebutton[aria-pressed="false"]')).toBeVisible();
+  });
+
+  test('Change Playback Speed', async ({ page }) => {
+    const settingsButton = await page.locator('.bmpui-ui-settingstogglebutton');
+    await settingsButton.click();
+
+    //const speedOption = await page.locator('text=Speed'); // Open speed menu
+    const speedOption = await page.locator('.bmpui-ui-playbackspeedselectbox'); // Open speed menu
+    await speedOption.click();
+
+    const specificSpeed = await page.locator('text=1.5x'); // Change speed to 1.5x
+    await specificSpeed.click();
+
+    // Verify the playback speed has changed to 1.5x
+    const playbackRate = await page.evaluate(() => document.querySelector('video').playbackRate);
+    expect(playbackRate).toBe(1.5);
+  });
+
+});
