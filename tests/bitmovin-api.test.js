@@ -10,9 +10,8 @@ test.describe('Bitmovin Player POC', () => {
   });
 
   test('Play and Pause Video', async ({ page }) => {
-    // Use the Bitmovin API to play and pause the video
     await page.evaluate(() => window.player.play());
-    await page.waitForTimeout(1000); // Wait for one second to ensure the video starts playing
+    await page.waitForTimeout(2000); // Wait for one second to ensure the video starts playing
 
     // Check that the video is playing
     const isPlaying = await page.evaluate(() => window.player.isPlaying());
@@ -50,7 +49,6 @@ test.describe('Bitmovin Player POC', () => {
   });
 
   test('Toggle Picture-in-Picture Mode', async ({ page }) => {
-    // Enter Picture-in-Picture mode using the Bitmovin API
     await page.evaluate(() => window.player.setViewMode(window.bitmovin.player.ViewMode.PictureInPicture));
 
     // Check that Picture-in-Picture mode is enabled
@@ -73,5 +71,61 @@ test.describe('Bitmovin Player POC', () => {
     const playbackRate = await page.evaluate(() => window.player.getPlaybackSpeed());
     expect(playbackRate).toBe(1.5);
   });
+
+  test('Toggle Fullscreen Mode', async ({ page }) => {
+    await page.evaluate(() => {
+      window.player.setViewMode(window.bitmovin.player.ViewMode.Fullscreen);
+    });
+  
+    // Wait a moment to ensure the fullscreen transition is complete
+    await page.waitForTimeout(1000);
+  
+    // Check that the player is in fullscreen mode
+    const isFullscreen = await page.evaluate(() => {
+      return window.player.getViewMode() === window.bitmovin.player.ViewMode.Fullscreen;
+    });
+    expect(isFullscreen).toBe(true);
+  
+    // Exit fullscreen mode
+    await page.evaluate(() => {
+      window.player.setViewMode(window.bitmovin.player.ViewMode.Inline);
+    });
+  
+    // Wait a moment to ensure the fullscreen exit transition is complete
+    await page.waitForTimeout(1000);
+  
+    // Check that the player is no longer in fullscreen mode
+    const isNotFullscreen = await page.evaluate(() => {
+      return window.player.getViewMode() === window.bitmovin.player.ViewMode.Inline;
+    });
+    expect(isNotFullscreen).toBe(true);
+  });
+  
+  
+  
+
+  test('Get Video Duration', async ({ page }) => {
+    await page.waitForFunction(() => window.player.isPlaying());
+  
+    // Wait for the duration to be available (may need to wait for metadata to load)
+    const duration = await page.evaluate(() => {
+      return new Promise(resolve => {
+        const checkDuration = () => {
+          const duration = window.player.getDuration();
+          if (duration > 0) {
+            resolve(duration);
+          } else {
+            // If duration is not available, retry after a short delay
+            setTimeout(checkDuration, 1000);
+          }
+        };
+        checkDuration();
+      });
+    });
+  
+    // Check that the duration is greater than zero (video is loaded)
+    expect(duration).toBeGreaterThan(0);
+  });
+  
 
 });
